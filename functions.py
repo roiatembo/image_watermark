@@ -57,4 +57,4 @@ class GFG:
         self.x = 0
         self.y = 5
 
-    if __name__ == "__main__":
+

@@ -1,30 +1,30 @@
 from tkinter import *
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw, ImageFont
 from tkinter import filedialog as fd
 from functions import GFG
 import math
-import tkinter.ttk
 
 
 def image_file_name(prompt_title):
     filetypes = (
-        ('png files', '*.png'),
         ('jpg files', '*.jpg'),
+        ('png files', '*.png'),
         ('jpeg files', '*.jpeg')
     )
 
     file_name = fd.askopenfilename(
         title=prompt_title,
-        initialdir='/home/roia/Pictures',
+        initialdir='/home/roia/stuff',
         filetypes=filetypes)
 
     return file_name
 
 def choose_image():
-
+    global chosen_img, image_height, image_width
     file_name = image_file_name("Choose An Image")
     chosen_img = Image.open(file_name)
     image_size = chosen_img.size
+
     # resize image to fit the window maintaining ratio
     image_width = image_size[0]
     image_height = image_size[1]
@@ -66,9 +66,67 @@ def choose_watermark():
 
 
 
-def add_text():
-    pass
+def close_add_text_win(top):
+   text_to_watermark = inserted_text.get()
+   top.destroy()
+   draw =ImageDraw.Draw(chosen_img)
+   font = ImageFont.truetype("yaci.ttf", 35)
+   text_width, text_height =  draw.textsize(text_to_watermark, font)
 
+   # calculate the x,y coordinates of the text
+   margin = 10
+   x = image_width - text_width - margin
+   y = image_height - text_height - margin
+   values = {
+    "image width": image_width,
+    "image height": image_height,
+    "text width" : text_width,
+    "text height" : text_height,
+    "x" : x,
+    "y" : y
+   }
+   print(f"\n {values} \n")
+
+    # draw watermark in the bottom right corner
+   draw.text((x, y), text_to_watermark, font=font)
+#    chosen_img.show()
+
+    #Save watermarked image
+   chosen_img.save('images/watermark.jpg')
+
+
+def popupwin():
+   global inserted_text
+   #Create a Toplevel window
+   top= Toplevel(root)
+   top.geometry("450x200")
+   top.title("Add text to watermark")
+   inserted_text = StringVar()
+
+   #list of fonts
+   fonts = [
+	"Lato",
+	"Noto Sans",
+	"Helvetica",
+	"Times Roman"
+    ]
+
+    # datatype of menu text
+   clicked = StringVar()
+
+    # initial menu text
+   clicked.set( "Choose A Font" )
+
+   #Create an Entry Widget in the Toplevel window
+   entry= Entry(top, textvariable=inserted_text,width= 25)
+   entry.place(x=100, y=50)
+   # Create Dropdown menu
+   drop = OptionMenu( top , clicked , *fonts )
+   drop.place(x=130, y=80)
+
+   #Create a Button Widget in the Toplevel Window
+   button= Button(top, text="Insert Text",command=lambda:close_add_text_win(top))
+   button.place(x=150, y=120)
 
 
 # root window
@@ -86,7 +144,7 @@ canvas.place(x=10, y=2)
 # Buttons
 choose_image_button = Button(text="Choose Image", command=choose_image)
 choose_watermark_button = Button(text="Choose Watermark Image", command=choose_watermark)
-text_watermark = Button(text="Add Text Watermark", command=add_text)
+text_watermark = Button(text="Add Text Watermark", command=popupwin)
 
 # Labels
 choose_image_label = Label(text="Select a picture to add watermark to it")
